@@ -2,19 +2,41 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
+    <style>
+      #player {
+        display: block;
+        margin: 0 auto 50px;
+      }
+      nav {
+        margin-bottom: 20px;
+      }
+      li {
+        list-style: none;
+      }
+
+      .inline-control {
+        display: inline-block;
+        margin-right: 10px;
+      }
+    </style>
   </head>
   <body>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
     <!-- 1. ここの<div>タグがYoutubeの<iframe>に置き換わる。 -->
     <div id="player"></div>
+    <form>
+      <input type="search" id="ytSearch" value="TRiDENT" />
+      <button id="searchBtn">検索</button>
+    </form>
+    <select class="searchlist"></select>
     <nav>
       <ul>
-        <li id="doplay">再生</li>
-        <li id="dostop">停止</li>
-        <li id="dopause">一時停止</li>
-        <li id="mute">ミュート</li>
-        <li id="do10sNext">10秒先へ</li>
-        <li id="do10sPrev">10秒戻る</li>
+        <li id="doplay" class="inline-control">再生</li>
+        <li id="dostop" class="inline-control">停止</li>
+        <li id="dopause" class="inline-control">一時停止</li>
+        <li id="mute" class="inline-control">ミュート</li>
+        <li id="do10sNext" class="inline-control">10秒先へ</li>
+        <li id="do10sPrev" class="inline-control">10秒戻る</li>
         <li>
           <select id="MovieId" class="ytMovie" name="ytMovie">
             <option selected>選択してください。</option>
@@ -59,6 +81,9 @@
       />
       <span id="volumeNum"></span>
     </label>
+    <h2>お気に入りリスト</h2>
+    <ul id="favoritesList"></ul>
+    <button id="addFavorite">お気に入りに追加</button>
 
     <script>
       // 2. 変数tagにscriptタグを作って入れる。Element=要素、Attrubute=属性
@@ -220,6 +245,106 @@
       speedBtn.addEventListener("change", function () {
         //数値でないと効かないので、文字列から数値に変換
         playSpeed(parseFloat(speedBtn.speed.value));
+      });
+
+      const selectvideo = document.querySelector(".searchlist");
+      //検索する関数の定義
+      function ytSearch(val) {
+        const key = "AIzaSyARdA0I1IXo6MRXm_ntKbkQWWzjaHBsFzc"; //自分のキーに書き換えます。
+        const num = 10;
+        const part = "snippet";
+        const type = "video";
+        const query = val;
+        fetch(
+          `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`
+        )
+          .then((data) => data.json())
+          .then((obj) => {
+            selectvideo.textContent = "";
+            for (let movie of obj["items"]) {
+              //各videoIdとタイトルを取得して変数に代入
+              const ytId = movie["id"]["videoId"];
+              const ytTitle = movie["snippet"]["title"];
+              //optionを作成して、videoIdとtitleを所定の場所に設置し、要素を追加していく。
+              const optionTag = document.createElement("option");
+              optionTag.textContent = ytTitle;
+              optionTag.setAttribute("value", ytId);
+              selectvideo.appendChild(optionTag);
+            }
+          });
+      }
+
+      //検索ボタンのクリック操作
+      const ytSearchBtn = document.querySelector("#searchBtn");
+      ytSearchBtn.addEventListener("click", function (e) {
+        const ytSearchVal = document.querySelector("#ytSearch").value;
+        console.log(ytSearchVal); //検索フォームの値を取得
+        ytSearch(ytSearchVal); //関数の実行
+        e.preventDefault(); //検索ボタンの送信をストップしておく。
+      });
+
+      // お気に入りに追加
+      document.querySelector("#addFavorite").addEventListener("click", () => {
+        const selectedOption = selectvideo.options[selectvideo.selectedIndex];
+        if (!selectedOption || !selectedOption.value) return;
+
+        const ytId = selectedOption.value;
+        const ytTitle = selectedOption.textContent;
+        saveFavorite(ytId, ytTitle);
+      });
+
+      /* お気に入り登録
+-----------------------------------------------------------------------------*/
+      // お気に入り保存の関数
+      function saveFavorite(id, title) {
+        const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+        const isExist = favorites.some((item) => item.id === id);
+        if (!isExist) {
+          favorites.push({ id, title });
+          localStorage.setItem("favorites", JSON.stringify(favorites));
+          displayFavorites();
+        }
+      }
+
+      // お気に入り表示の関数
+      function displayFavorites() {
+        const list = document.querySelector("#favoritesList");
+        const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+        list.innerHTML = "";
+
+        for (const fav of favorites) {
+          const li = document.createElement("li");
+          li.innerHTML = `
+      <span>${fav.title}</span>
+      <button data-id="${fav.id}" class="favPlay">▶ 再生</button>
+      <button data-id="${fav.id}" class="favRemove">🗑 削除</button>
+      `;
+          list.appendChild(li);
+        }
+
+        // 再生ボタン
+        document.querySelectorAll(".favPlay").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            youtubeId = btn.dataset.id;
+            player.destroy();
+            onYouTubeIframeAPIReady();
+          });
+        });
+
+        // 削除ボタン
+        document.querySelectorAll(".favRemove").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+            favorites = favorites.filter((item) => item.id !== btn.dataset.id);
+            localStorage.setItem("favorites", JSON.stringify(favorites));
+            displayFavorites();
+          });
+        });
+      }
+
+      // ページ読み込み時にお気に入り表示
+      window.addEventListener("DOMContentLoaded", () => {
+        displayFavorites();
       });
     </script>
   </body>
