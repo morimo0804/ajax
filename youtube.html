@@ -68,6 +68,20 @@
         background-color: #c2c2c2;
       }
 
+      .setting {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+      }
+
+      .setting ul {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+      }
+
       h2 {
         margin: 0;
       }
@@ -76,14 +90,14 @@
         display: flex;
         align-items: center;
         gap: 30px;
-        margin: 30px 0;
+        margin: 30px 0 20px;
       }
 
       /* お気に入りリストのスタイル */
       #favoritesList {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
         padding: 0;
         margin: 0;
       }
@@ -92,7 +106,6 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin: 10px 0;
         padding: 5px;
         border: 1px solid #ddd;
         border-radius: 8px;
@@ -100,10 +113,10 @@
       }
 
       #favoritesList li span {
-        flex: 1; /* タイトルが余ったスペースを埋める */
+        flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap; /* タイトルが長すぎると省略記号をつける */
+        white-space: nowrap;
       }
 
       /* 再生ボタン */
@@ -229,6 +242,8 @@
             <li><button id="mute" class="control-btn">ミュート</button></li>
           </ul>
         </div>
+      </nav>
+      <div class="setting">
         <ul>
           <li>
             <form id="doSpeed">
@@ -251,18 +266,18 @@
             </form>
           </li>
         </ul>
-      </nav>
-      <label
-        >ボリューム<input
-          type="range"
-          min="0"
-          max="100"
-          name="volume"
-          id="volume"
-          value="50"
-        />
-        <span id="volumeNum"></span>
-      </label>
+        <label
+          >ボリューム<input
+            type="range"
+            min="0"
+            max="100"
+            name="volume"
+            id="volume"
+            value="50"
+          />
+          <span id="volumeNum"></span>
+        </label>
+      </div>
       <div class="fav">
         <h2>お気に入りリスト</h2>
         <button id="addFavorite" class="control-btn">お気に入りに追加</button>
@@ -413,9 +428,10 @@
       //ボリュームイベント
       let volumeBtn = document.querySelector("#volume");
       let volumeTxt = document.querySelector("#volumeNum");
-      volumeBtn.addEventListener("change", function () {
-        volumeFn(this.value);
-        volumeTxt.textContent = this.value;
+      volumeBtn.addEventListener("input", function () {
+        let vol = this.value;
+        player.setVolume(vol); // YouTubeのボリュームを更新
+        volumeTxt.textContent = vol; // ボリューム表示を更新
       });
 
       //動画切り替えイベント
