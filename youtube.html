@@ -4,12 +4,18 @@
     <meta charset="utf-8" />
     <style>
       #player {
-        display: block;
-        margin: 0 auto 50px;
+        width: 100%;
+        margin: 50px 0;
       }
+
       nav {
         margin-bottom: 20px;
       }
+
+      ul {
+        padding-left: 0;
+      }
+
       li {
         list-style: none;
       }
@@ -18,27 +24,177 @@
         display: inline-block;
         margin-right: 10px;
       }
+
+      .inner {
+        width: 90%;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .search {
+        text-align: center;
+      }
+
+      .controls-wrapper {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .controls-top,
+      .controls-bottom {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        gap: 30px;
+      }
+
+      .controls-top {
+        margin-bottom: 20px;
+      }
+
+      .control-btn {
+        background-color: #e9e9e9;
+        border: none;
+        padding: 5px 8px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .control-btn:hover {
+        background-color: #c2c2c2;
+      }
+
+      h2 {
+        margin: 0;
+      }
+
+      .fav {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin: 30px 0;
+      }
+
+      /* お気に入りリストのスタイル */
+      #favoritesList {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 0;
+        margin: 0;
+      }
+
+      #favoritesList li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 10px 0;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+      }
+
+      #favoritesList li span {
+        flex: 1; /* タイトルが余ったスペースを埋める */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap; /* タイトルが長すぎると省略記号をつける */
+      }
+
+      /* 再生ボタン */
+      .favPlay,
+      .favRemove {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+
+      .favPlay:hover,
+      .favRemove:hover {
+        background-color: #2980b9;
+      }
+
+      /* 削除ボタン */
+      .favRemove {
+        background-color: #e74c3c;
+      }
+
+      .favRemove:hover {
+        background-color: #c0392b;
+      }
+
+      #favoritesList li button {
+        margin-left: 10px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      /* 再生ボタンと削除ボタンが横並びになるように調整 */
+      #favoritesList li button.favPlay {
+        margin-left: 10px;
+      }
+
+      #favoritesList li button.favRemove {
+        margin-left: 10px;
+      }
+
+      /* アニメーション追加 */
+      #favoritesList li {
+        opacity: 0;
+        animation: fadeIn 0.3s forwards;
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      /* お気に入り追加ボタン */
+      #addFavorite {
+        background-color: #2ecc71;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      #addFavorite:hover {
+        background-color: #27ae60;
+      }
     </style>
   </head>
   <body>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
     <!-- 1. ここの<div>タグがYoutubeの<iframe>に置き換わる。 -->
-    <div id="player"></div>
-    <form>
-      <input type="search" id="ytSearch" value="TRiDENT" />
-      <button id="searchBtn">検索</button>
-    </form>
-    <select class="searchlist"></select>
-    <nav>
-      <ul>
-        <li id="doplay" class="inline-control">再生</li>
-        <li id="dostop" class="inline-control">停止</li>
-        <li id="dopause" class="inline-control">一時停止</li>
-        <li id="mute" class="inline-control">ミュート</li>
-        <li id="do10sNext" class="inline-control">10秒先へ</li>
-        <li id="do10sPrev" class="inline-control">10秒戻る</li>
-        <li>
-          <select id="MovieId" class="ytMovie" name="ytMovie">
+    <div class="inner">
+      <div id="player"></div>
+      <div class="search">
+        <form>
+          <input type="search" id="ytSearch" value="TRiDENT" />
+          <button id="searchBtn">検索</button>
+        </form>
+        <select id="MovieId" class="ytMovie searchlist" name="ytMovie">
+          <optgroup label="固定動画">
             <option selected>選択してください。</option>
             <option value="KuKYxjVw3V4">
               【I.CINNAMOROLL Animation】Episode 1: Sketching
@@ -52,38 +208,67 @@
             <option value="JfU3N6zU1uU">
               【I.CINNAMOROLL Animation】Episode 4: Harvest
             </option>
-          </select>
-        </li>
-        <li>
-          <form id="doSpeed">
-            <input type="radio" id="mslow" name="speed" value="0.25" />
-            <label for="mslow">0.25</label>
-            <input type="radio" id="slow" name="speed" value="0.5" />
-            <label for="slow">0.5</label>
-            <input type="radio" id="normal" name="speed" value="1.0" checked />
-            <label for="normal">1</label>
-            <input type="radio" id="hspeed" name="speed" value="1.5" />
-            <label for="hspeed">1.5</label>
-            <input type="radio" id="mhspeed" name="speed" value="2" />
-            <label for="mhspeed">2</label>
-          </form>
-        </li>
-      </ul>
-    </nav>
-    <label
-      >ボリューム<input
-        type="range"
-        min="0"
-        max="100"
-        name="volume"
-        id="volume"
-        value="50"
-      />
-      <span id="volumeNum"></span>
-    </label>
-    <h2>お気に入りリスト</h2>
-    <ul id="favoritesList"></ul>
-    <button id="addFavorite">お気に入りに追加</button>
+          </optgroup>
+        </select>
+      </div>
+      <nav>
+        <div class="controls-wrapper">
+          <ul class="controls-top">
+            <li>
+              <button id="do10sPrev" class="control-btn">10秒戻る</button>
+            </li>
+            <li>
+              <button id="togglePlayPause" class="control-btn">再生</button>
+            </li>
+            <li>
+              <button id="do10sNext" class="control-btn">10秒先へ</button>
+            </li>
+          </ul>
+          <ul class="controls-bottom">
+            <li><button id="dostop" class="control-btn">停止</button></li>
+            <li><button id="mute" class="control-btn">ミュート</button></li>
+          </ul>
+        </div>
+        <ul>
+          <li>
+            <form id="doSpeed">
+              <input type="radio" id="mslow" name="speed" value="0.25" />
+              <label for="mslow">0.25</label>
+              <input type="radio" id="slow" name="speed" value="0.5" />
+              <label for="slow">0.5</label>
+              <input
+                type="radio"
+                id="normal"
+                name="speed"
+                value="1.0"
+                checked
+              />
+              <label for="normal">1</label>
+              <input type="radio" id="hspeed" name="speed" value="1.5" />
+              <label for="hspeed">1.5</label>
+              <input type="radio" id="mhspeed" name="speed" value="2" />
+              <label for="mhspeed">2</label>
+            </form>
+          </li>
+        </ul>
+      </nav>
+      <label
+        >ボリューム<input
+          type="range"
+          min="0"
+          max="100"
+          name="volume"
+          id="volume"
+          value="50"
+        />
+        <span id="volumeNum"></span>
+      </label>
+      <div class="fav">
+        <h2>お気に入りリスト</h2>
+        <button id="addFavorite" class="control-btn">お気に入りに追加</button>
+      </div>
+      <ul id="favoritesList"></ul>
+    </div>
 
     <script>
       // 2. 変数tagにscriptタグを作って入れる。Element=要素、Attrubute=属性
@@ -182,22 +367,24 @@
 
       /* イベント
 -----------------------------------------------------------------------------*/
-      //再生イベント
-      let doplayBtn = document.querySelector("#doplay");
-      doplayBtn.addEventListener("click", function () {
-        playTheVideo(); //関数名に変更、関数の実行
+      const playPauseBtn = document.getElementById("togglePlayPause");
+      let isPlaying = false;
+
+      playPauseBtn.addEventListener("click", () => {
+        if (isPlaying) {
+          pauseTheVideo();
+          playPauseBtn.textContent = "再生";
+        } else {
+          playTheVideo();
+          playPauseBtn.textContent = "一時停止";
+        }
+        isPlaying = !isPlaying;
       });
 
       //停止イベント
       let dostopBtn = document.querySelector("#dostop");
       dostopBtn.addEventListener("click", function () {
         stopVideo();
-      });
-
-      //一時停止イベント
-      let dopauseBtn = document.querySelector("#dopause");
-      dopauseBtn.addEventListener("click", function () {
-        pauseTheVideo();
       });
 
       //ミュートイベント
@@ -250,27 +437,38 @@
       const selectvideo = document.querySelector(".searchlist");
       //検索する関数の定義
       function ytSearch(val) {
-        const key = "AIzaSyARdA0I1IXo6MRXm_ntKbkQWWzjaHBsFzc"; //自分のキーに書き換えます。
+        const key = "AIzaSyARdA0I1IXo6MRXm_ntKbkQWWzjaHBsFzc";
         const num = 10;
         const part = "snippet";
         const type = "video";
         const query = val;
+
         fetch(
           `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`
         )
           .then((data) => data.json())
           .then((obj) => {
-            selectvideo.textContent = "";
+            const movieSelect = document.querySelector("#MovieId");
+
+            // ▶ すべての選択肢を削除（固定・検索結果含めて）
+            while (movieSelect.firstChild) {
+              movieSelect.removeChild(movieSelect.firstChild);
+            }
+
+            // ▶ 検索結果 optgroup を作成
+            const searchGroup = document.createElement("optgroup");
+            searchGroup.label = "検索結果";
+
             for (let movie of obj["items"]) {
-              //各videoIdとタイトルを取得して変数に代入
               const ytId = movie["id"]["videoId"];
               const ytTitle = movie["snippet"]["title"];
-              //optionを作成して、videoIdとtitleを所定の場所に設置し、要素を追加していく。
               const optionTag = document.createElement("option");
               optionTag.textContent = ytTitle;
               optionTag.setAttribute("value", ytId);
-              selectvideo.appendChild(optionTag);
+              searchGroup.appendChild(optionTag);
             }
+
+            movieSelect.appendChild(searchGroup);
           });
       }
 
@@ -285,8 +483,17 @@
 
       // お気に入りに追加
       document.querySelector("#addFavorite").addEventListener("click", () => {
+        const selectvideo = document.querySelector(".searchlist");
+        if (!selectvideo) {
+          alert("動画が選択されていません。先に検索してください。");
+          return;
+        }
+
         const selectedOption = selectvideo.options[selectvideo.selectedIndex];
-        if (!selectedOption || !selectedOption.value) return;
+        if (!selectedOption || !selectedOption.value) {
+          alert("動画が選択されていません");
+          return;
+        }
 
         const ytId = selectedOption.value;
         const ytTitle = selectedOption.textContent;
