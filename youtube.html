@@ -462,8 +462,27 @@
         fetch(
           `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`
         )
+          .then((data) => {
+            if (!data.ok) {
+              throw new Error(`HTTP error! status: ${data.status}`);
+            }
+            return data.json();
+          })
           .then((data) => data.json())
           .then((obj) => {
+            console.log(obj); // ここでレスポンスを確認
+
+            if (
+              !obj.items ||
+              !Array.isArray(obj.items) ||
+              obj.items.length === 0
+            ) {
+              alert(
+                "検索結果が取得できませんでした。しばらく待ってから再度お試しください。"
+              );
+              return;
+            }
+
             const movieSelect = document.querySelector("#MovieId");
 
             // ▶ すべての選択肢を削除（固定・検索結果含めて）
