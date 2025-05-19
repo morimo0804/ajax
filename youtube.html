@@ -451,61 +451,88 @@
       });
 
       const selectvideo = document.querySelector(".searchlist");
-      //検索する関数の定義
-      function ytSearch(val) {
-        const key = "AIzaSyARdA0I1IXo6MRXm_ntKbkQWWzjaHBsFzc";
-        const num = 10;
-        const part = "snippet";
-        const type = "video";
-        const query = val;
-
-        fetch(
-          `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`
-        )
-          .then((data) => {
-            if (!data.ok) {
-              throw new Error(`HTTP error! status: ${data.status}`);
-            }
-            return data.json();
+      // 検索機能
+      function ytSearch(query) {
+        const key = "AIzaSyBD_YoEaykIzWycCqAR4O70B3xdH22JlRY";
+        const url =
+          "https://www.googleapis.com/youtube/v3/search" +
+          "?type=video&part=snippet&maxResults=10" +
+          "&key=" +
+          key +
+          "&q=" +
+          encodeURIComponent(query);
+        fetch(url)
+          .then(function (res) {
+            return res.json();
           })
-          .then((data) => data.json())
-          .then((obj) => {
-            console.log(obj); // ここでレスポンスを確認
-
-            if (
-              !obj.items ||
-              !Array.isArray(obj.items) ||
-              obj.items.length === 0
-            ) {
-              alert(
-                "検索結果が取得できませんでした。しばらく待ってから再度お試しください。"
-              );
-              return;
-            }
-
-            const movieSelect = document.querySelector("#MovieId");
-
-            // ▶ すべての選択肢を削除（固定・検索結果含めて）
-            while (movieSelect.firstChild) {
-              movieSelect.removeChild(movieSelect.firstChild);
-            }
-
-            // ▶ 検索結果 optgroup を作成
-            const searchGroup = document.createElement("optgroup");
-            searchGroup.label = "検索結果";
-
-            for (let movie of obj["items"]) {
-              const ytId = movie["id"]["videoId"];
-              const ytTitle = movie["snippet"]["title"];
-              const optionTag = document.createElement("option");
-              optionTag.textContent = ytTitle;
-              optionTag.setAttribute("value", ytId);
-              searchGroup.appendChild(optionTag);
-            }
-
-            movieSelect.appendChild(searchGroup);
+          .then(function (data) {
+            console.log(data);
+            const list = document.querySelector("#MovieId");
+            // 「選択してください。」を残して初期化
+            list.innerHTML = "<option selected>選択してください。</option>";
+            data.items.forEach(function (item) {
+              const opt = document.createElement("option");
+              opt.value = item.id.videoId;
+              opt.textContent = item.snippet.title;
+              list.appendChild(opt);
+            });
           });
       }
+      //検索する関数の定義
+      // function ytSearch(val) {
+      //   const key = "AIzaSyARdA0I1IXo6MRXm_ntKbkQWWzjaHBsFzc";
+      //   const num = 10;
+      //   const part = "snippet";
+      //   const type = "video";
+      //   const query = val;
+
+      //   fetch(
+      //     `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`
+      //   )
+      //     .then((data) => {
+      //       if (!data.ok) {
+      //         throw new Error(`HTTP error! status: ${data.status}`);
+      //       }
+      //       return data.json();
+      //     })
+      //     .then((data) => data.json())
+      //     .then((obj) => {
+      //       console.log(obj); // ここでレスポンスを確認
+
+      //       if (
+      //         !obj.items ||
+      //         !Array.isArray(obj.items) ||
+      //         obj.items.length === 0
+      //       ) {
+      //         alert(
+      //           "検索結果が取得できませんでした。しばらく待ってから再度お試しください。"
+      //         );
+      //         return;
+      //       }
+
+      //       const movieSelect = document.querySelector("#MovieId");
+
+      //       // ▶ すべての選択肢を削除（固定・検索結果含めて）
+      //       while (movieSelect.firstChild) {
+      //         movieSelect.removeChild(movieSelect.firstChild);
+      //       }
+
+      //       // ▶ 検索結果 optgroup を作成
+      //       const searchGroup = document.createElement("optgroup");
+      //       searchGroup.label = "検索結果";
+
+      //       for (let movie of obj["items"]) {
+      //         const ytId = movie["id"]["videoId"];
+      //         const ytTitle = movie["snippet"]["title"];
+      //         const optionTag = document.createElement("option");
+      //         optionTag.textContent = ytTitle;
+      //         optionTag.setAttribute("value", ytId);
+      //         searchGroup.appendChild(optionTag);
+      //       }
+
+      //       movieSelect.appendChild(searchGroup);
+      //     });
+      // }
 
       //検索ボタンのクリック操作
       const ytSearchBtn = document.querySelector("#searchBtn");
