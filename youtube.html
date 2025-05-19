@@ -460,7 +460,7 @@
         const query = val;
 
         fetch(
-          `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}`
+          `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`
         )
           .then((data) => {
             if (!data.ok) {
