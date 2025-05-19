@@ -5,7 +5,7 @@
     <style>
       #player {
         width: 100%;
-        margin: 50px 0;
+        margin: 50px 0 10px;
       }
 
       nav {
@@ -91,6 +91,65 @@
         align-items: center;
         gap: 30px;
         margin: 30px 0 20px;
+      }
+
+      /* シークバー */
+      .bar-inner {
+        width: 100%; /* 親コンテナの幅を100%に */
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 50px;
+      }
+
+      .seekbar-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #seekbar {
+        width: 100%;
+        flex: 1;
+        appearance: none;
+        height: 6px;
+        background: #ddd;
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+        position: relative;
+      }
+
+      /* スライダーの進行バー部分（赤色） */
+      #seekbar::-webkit-slider-thumb {
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: red;
+        border-radius: 50%;
+        box-shadow: 0 0 0 1px white;
+        margin-top: -4px;
+        transition: background 0.3s ease;
+      }
+
+      #seekbar::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: red;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+      }
+
+      #seekbar::-webkit-slider-runnable-track {
+        background: red;
+        height: 6px;
+        border-radius: 3px;
+      }
+
+      #seekbar::-moz-range-track {
+        background: red;
+        height: 6px;
+        border-radius: 3px;
       }
 
       /* お気に入りリストのスタイル */
@@ -201,6 +260,10 @@
     <!-- 1. ここの<div>タグがYoutubeの<iframe>に置き換わる。 -->
     <div class="inner">
       <div id="player"></div>
+      <div class="bar-inner">
+        <input type="range" id="seekbar" value="0" min="0" step="1" />
+        <span id="time-display">0:00 / 0:00</span>
+      </div>
       <div class="search">
         <form>
           <input type="search" id="ytSearch" value="TRiDENT" />
@@ -313,6 +376,9 @@
         });
       }
 
+      // ---- シークバー機能の追加 ----
+      const seekbar = document.querySelector("#seekbar");
+
       // 4. このAPIは、video playderが準備でしたら、この関数を呼び出します。
       function onPlayerReady(event) {
         event.target.playVideo();
@@ -320,7 +386,37 @@
         event.target.setVolume(currentVol);
         document.querySelector("#volume").value = currentVol;
         document.querySelector("#volumeNum").textContent = currentVol;
+
+        // 再生時間の表示
+        const timeDisplay = document.querySelector("#time-display");
+
+        setInterval(() => {
+          if (player && player.getDuration) {
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+            seekbar.max = duration;
+            seekbar.value = currentTime;
+
+            // 時間を mm:ss 形式に整形
+            timeDisplay.textContent = `${formatTime(
+              currentTime
+            )} / ${formatTime(duration)}`;
+          }
+        }, 1000);
+
+        // 時間整形のための関数
+        function formatTime(seconds) {
+          const m = Math.floor(seconds / 60);
+          const s = Math.floor(seconds % 60);
+          return `${m}:${s.toString().padStart(2, "0")}`;
+        }
       }
+
+      // シークバー操作によって再生位置を変更
+      seekbar.addEventListener("input", () => {
+        const seekTo = parseFloat(seekbar.value);
+        player.seekTo(seekTo, true);
+      });
 
       /* 5. video playerのステート（状態）が変更されたら、この関数を呼び出す。
           動画を再生するときの設定は、state=1にしておきます。
@@ -478,61 +574,6 @@
             });
           });
       }
-      //検索する関数の定義
-      // function ytSearch(val) {
-      //   const key = "AIzaSyARdA0I1IXo6MRXm_ntKbkQWWzjaHBsFzc";
-      //   const num = 10;
-      //   const part = "snippet";
-      //   const type = "video";
-      //   const query = val;
-
-      //   fetch(
-      //     `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`
-      //   )
-      //     .then((data) => {
-      //       if (!data.ok) {
-      //         throw new Error(`HTTP error! status: ${data.status}`);
-      //       }
-      //       return data.json();
-      //     })
-      //     .then((data) => data.json())
-      //     .then((obj) => {
-      //       console.log(obj); // ここでレスポンスを確認
-
-      //       if (
-      //         !obj.items ||
-      //         !Array.isArray(obj.items) ||
-      //         obj.items.length === 0
-      //       ) {
-      //         alert(
-      //           "検索結果が取得できませんでした。しばらく待ってから再度お試しください。"
-      //         );
-      //         return;
-      //       }
-
-      //       const movieSelect = document.querySelector("#MovieId");
-
-      //       // ▶ すべての選択肢を削除（固定・検索結果含めて）
-      //       while (movieSelect.firstChild) {
-      //         movieSelect.removeChild(movieSelect.firstChild);
-      //       }
-
-      //       // ▶ 検索結果 optgroup を作成
-      //       const searchGroup = document.createElement("optgroup");
-      //       searchGroup.label = "検索結果";
-
-      //       for (let movie of obj["items"]) {
-      //         const ytId = movie["id"]["videoId"];
-      //         const ytTitle = movie["snippet"]["title"];
-      //         const optionTag = document.createElement("option");
-      //         optionTag.textContent = ytTitle;
-      //         optionTag.setAttribute("value", ytId);
-      //         searchGroup.appendChild(optionTag);
-      //       }
-
-      //       movieSelect.appendChild(searchGroup);
-      //     });
-      // }
 
       //検索ボタンのクリック操作
       const ytSearchBtn = document.querySelector("#searchBtn");
