@@ -150,12 +150,6 @@
         border-radius: 3px;
       }
 
-      #seekbar::-moz-range-track {
-        background: red;
-        height: 6px;
-        border-radius: 3px;
-      }
-
       /* お気に入りリストのスタイル */
       #favoritesList {
         display: flex;
@@ -375,44 +369,74 @@
           },
           events: {
             onReady: onPlayerReady,
-            //'onStateChange': onPlayerStateChange
+            onStateChange: onPlayerStateChange,
           },
         });
       }
 
       // ---- シークバー機能の追加 ----
       const seekbar = document.querySelector("#seekbar");
+      const timeDisplay = document.querySelector("#time-display");
+      let isPlayerPlaying = false;
+      let intervalId = null;
 
-      // 4. このAPIは、video playderが準備でしたら、この関数を呼び出します。
+      // 時間整形関数（mm:ss）
+      function formatTime(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${m}:${s.toString().padStart(2, "0")}`;
+      }
+
+      // プレイヤー準備完了時
       function onPlayerReady(event) {
         event.target.playVideo();
+
         let currentVol = 5;
         event.target.setVolume(currentVol);
         document.querySelector("#volume").value = currentVol;
         document.querySelector("#volumeNum").textContent = currentVol;
 
-        // 再生時間の表示
-        const timeDisplay = document.querySelector("#time-display");
-
-        setInterval(() => {
-          if (player && player.getDuration) {
+        intervalId = setInterval(() => {
+          if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
             const currentTime = player.getCurrentTime();
             const duration = player.getDuration();
             seekbar.max = duration;
             seekbar.value = currentTime;
-
-            // 時間を mm:ss 形式に整形
             timeDisplay.textContent = `${formatTime(
               currentTime
             )} / ${formatTime(duration)}`;
           }
         }, 1000);
+      }
 
-        // 時間整形のための関数
-        function formatTime(seconds) {
-          const m = Math.floor(seconds / 60);
-          const s = Math.floor(seconds % 60);
-          return `${m}:${s.toString().padStart(2, "0")}`;
+      // プレイヤー状態変化時
+      function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.PLAYING) {
+          isPlayerPlaying = true;
+
+          // インターバルがすでにある場合はクリア
+          if (intervalId) clearInterval(intervalId);
+
+          intervalId = setInterval(() => {
+            if (player && player.getDuration) {
+              const currentTime = player.getCurrentTime();
+              const duration = player.getDuration();
+              seekbar.max = duration;
+              seekbar.value = currentTime;
+
+              timeDisplay.textContent = `${formatTime(
+                currentTime
+              )} / ${formatTime(duration)}`;
+            }
+          }, 1000);
+        } else {
+          isPlayerPlaying = false;
+
+          // 再生以外の状態ならインターバルを停止
+          if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+          }
         }
       }
 
@@ -428,7 +452,7 @@
       let done = false;
       function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.PLAYING && !done) {
-          setTimeout(stopVideo, 6000);
+          // setTimeout(stopVideo, 6000);
           done = true;
         }
       }
